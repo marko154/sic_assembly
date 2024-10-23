@@ -5,11 +5,13 @@ first   LDA     x
         J       halt
 poly
         STB     polyB
-        RMO     A, B
-        MULR    A, B
-        MUL     #3
-        ADDR    B, A
-        LDB     polyB
+        ADD     #2
+        MUL     x
+        ADD     #3
+        MUL     x
+        ADD     #4
+        MUL     x
+        ADD     #5
         RSUB
 
 halt    J      halt
