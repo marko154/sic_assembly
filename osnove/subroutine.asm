@@ -1,22 +1,31 @@
-primer  START   0
-first   LDA     x
-        JSUB    poly
-        STA     result
-        J       halt
-poly
-        STB     polyB
-        ADD     #2
-        MUL     x
-        ADD     #3
-        MUL     x
-        ADD     #4
-        MUL     x
-        ADD     #5
-        RSUB
+h_func	START   0
+first	CLEAR	X
+loop	LDA     in, X
+	JSUB    poly
+	STA     in, X
+	TIX     #len
+	TIX     #len
+	TIX     #len
+	JLT	loop
+halt	J       halt
 
-halt    J      halt
+poly	STB     polyB
+	RMO	A, B
+	ADD     #2
+	MULR    B, A
+	ADD     #3
+	MULR    B, A
+	ADD     #4
+	MULR    B, A
+	ADD     #5
+	LDB	polyB
+	RSUB
+
 .data
-x       WORD    2
-polyB   WORD    0
-result  WORD    0
-        END    first
+in	WORD    0
+	WORD    5
+	WORD    42
+lastin	EQU     *
+len	EQU     lastin - in
+polyB	WORD    0
+	END     h_func
