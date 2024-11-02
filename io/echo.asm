@@ -1,5 +1,5 @@
 echo	START   0
-first
+first	JSUB	sinit
 	+LDA	#12345
 	JSUB	num
 	JSUB	nl
@@ -7,7 +7,6 @@ first
 	JSUB	string
 	JSUB	nl
 halt	J       halt
-
 
 .print char in register A
 char	WD      #1
@@ -40,7 +39,7 @@ break	LDL	stringL
 	RSUB
 
 . A -> A % 10 TODO: improve this
-mod10 	STT	modT
+mod10	STT	modT
 	RMO	A, T
 	DIV	#10
 	MUL	#10
@@ -49,34 +48,64 @@ mod10 	STT	modT
 	LDT	modT
 	RSUB
 
+. int print_num(int a) {
+.     if (a < 10) {
+.         print(a);
+.     } else {
+.         print_num(a / 10);
+.         print(a % 10);
+.     }
+. }
 .print number in register A
-num	STL	numL
-	CLEAR	B
-	LDS	#10
-loop1 	COMP	#0
-	JEQ	end1
+num	STL	@sp
+	JSUB	spush
+	STA	@sp
+	JSUB	spush
+	STT	@sp
+	JSUB	spush
+
+	COMP	#10
+	JLT	numEnd
 	RMO	A, T
-	JSUB	mod10
-	MULR	S, B
-	ADDR	A, B
-	RMO	T, A
 	DIV	#10
-	J	loop1
-end1	RMO	B, A
-	CLEAR	B
-loop2 	COMP	#0
-	JEQ	end2
-	RMO	A, T
-	JSUB	mod10
+	JSUB	num
+	RMO	T, A
+numEnd	JSUB	mod10
 	ADD	#48
-	JSUB	char
-	MULR	S, B
-	ADDR	A, B
-	RMO	T, A
-	DIV	#10
-	J	loop2
-end2	LDL	numL
+	WD	#1
+	JSUB	spop
+	LDT	@sp
+	JSUB	spop
+	LDA	@sp
+	JSUB	spop
+	LDL	@sp
 	RSUB
+
+
+sinit   . initialize sp to the start of stack
+        STA     stackA
+        LDA     #stack
+        STA     sp
+        LDA     stackA
+        RSUB
+spush   . inc sp
+        STA     stackA
+        LDA     sp
+        ADD     #3
+        STA     sp
+        LDA     stackA
+        RSUB
+spop    . dec sp
+        STA     stackA
+        LDA     sp
+        SUB     #3
+        STA     sp
+        LDA     stackA
+        RSUB
+
+stack   RESW    1000
+sp      WORD    0
+stackA  WORD    0
 
 txt	BYTE    C'hello world!'
 	BYTE    0
@@ -88,5 +117,4 @@ stringL	RESW	1
 modB	RESW	1
 modT	RESW	1
 numL	RESW	1
-stack	RESW	100
 	END     first
